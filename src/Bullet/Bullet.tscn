@@ -1,0 +1,55 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Sprite
+
+func _physics_process(delta):
+	var v: float = $Controller.velocity_signal.sample()
+	var dead: bool = $Controller.dead_signal.sample()
+	translate(Vector2(0, v * delta))
+	$Controller.sink_event(delta)
+	if dead:
+		queue_free()
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Signal
+
+var velocity_signal: Signal
+var dead_signal: Signal
+
+func _ready():
+	velocity_signal = Signal.new()
+	velocity_signal._state = -1000.0
+	append(velocity_signal, \"Velocity\")
+	
+	var countdown: = accum(
+		funcref(self, \"_snap_state\"),
+		funcref(get_script(), \"_countdown\"),
+		0.5
+	)
+	append(countdown, \"Countdown\")
+	
+	var death: = countdown.fmap(funcref(get_script(), \"_dead\"))
+	add_child(death)
+	var is_dead: = death.hold(false)
+	dead_signal = is_dead
+	append(is_dead, \"Dead\")
+	
+
+static func _countdown(time: float, delta: float) -> float:
+	return time - delta
+
+static func _dead(time: float) -> bool:
+	return time <= 0.0
+"
+
+[node name="Bullet" type="Sprite"]
+scale = Vector2( 0.2, 0.2 )
+texture = ExtResource( 1 )
+script = SubResource( 1 )
+
+[node name="Controller" type="Node" parent="."]
+script = SubResource( 2 )

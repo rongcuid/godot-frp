@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node
+
+func _ready():
+	set_physics_process(true)
+
+func _physics_process(delta):
+	$AccComponent.sink_event(null)
+	var acc = $AccComponent/Accumulator.sample()
+	print(\"Sample: \", acc)
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Signal
+
+func _ready():
+	var acc: Signal = accum_state(
+		funcref(get_script(), \"_update_plus_one\"),
+		0
+	)
+	append(acc, \"Accumulator\")
+
+static func _update_plus_one(state, _event):
+	return state + 1
+"
+
+[node name="TestFRPBasic1" type="Node"]
+script = SubResource( 1 )
+
+[node name="AccComponent" type="Node" parent="."]
+script = SubResource( 2 )

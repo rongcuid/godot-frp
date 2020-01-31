@@ -1,0 +1,102 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends KinematicBody2D
+
+func _physics_process(delta):
+	var vx: float = $Component.velocity_signal.sample()
+	var v: = Vector2(vx, 0)
+	var k: = move_and_collide(v * delta)
+	$Component.sink_event(k)
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Signal
+
+var velocity_signal: Signal = null
+
+func _ready():
+	
+	var beh_switch: = accum_state(funcref(self, \"_switch_beh\"), 1)
+	add_child(beh_switch)
+	
+	var behavior: = beh_switch.mapstate(funcref(self, \"_map_beh\"))
+	add_child(behavior)
+	
+	velocity_signal = behavior.switch_state()
+	add_child(velocity_signal)
+
+
+func _switch_beh(state: int, ev: KinematicCollision2D) -> int:
+	if is_instance_valid(ev):
+		return 2 if state == 1 else 1
+	else:
+		return state
+
+
+func _map_beh(i: int) -> Signal:
+	if i == 1:
+		return $\"Behavior 1\" as Signal
+	else:
+		return $\"Behavior 2\" as Signal
+"
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends Signal
+
+func _ready():
+	_state = 300.0
+"
+
+[sub_resource type="GDScript" id=4]
+script/source = "extends Signal
+
+func _ready():
+	_state = -300.0
+"
+
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 64, 64 )
+
+[node name="TestFRPBasic3" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+
+[node name="Bouncer" type="KinematicBody2D" parent="."]
+script = SubResource( 1 )
+
+[node name="Component" type="Node" parent="Bouncer"]
+script = SubResource( 2 )
+
+[node name="Behavior 1" type="Node" parent="Bouncer/Component"]
+script = SubResource( 3 )
+
+[node name="Behavior 2" type="Node" parent="Bouncer/Component"]
+script = SubResource( 4 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bouncer"]
+shape = SubResource( 5 )
+
+[node name="Sprite" type="Sprite" parent="Bouncer"]
+texture = ExtResource( 2 )
+
+[node name="Wall 1" type="StaticBody2D" parent="."]
+position = Vector2( 129, 0 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wall 1"]
+shape = SubResource( 5 )
+
+[node name="Sprite" type="Sprite" parent="Wall 1"]
+texture = ExtResource( 2 )
+
+[node name="Wall 2" type="StaticBody2D" parent="."]
+position = Vector2( -512, 0 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wall 2"]
+shape = SubResource( 5 )
+
+[node name="Sprite" type="Sprite" parent="Wall 2"]
+texture = ExtResource( 2 )

@@ -1,0 +1,57 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://src/Player/PlayerController.gd" type="Script" id=2]
+[ext_resource path="res://src/Player/PlayerSlowInput.gd" type="Script" id=3]
+[ext_resource path="res://src/Player/PlayerDirectionInput.gd" type="Script" id=4]
+[ext_resource path="res://src/Player/PlayerFireInput.gd" type="Script" id=5]
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends Node2D
+
+export(NodePath) var scene_root_node
+onready var scene_root = get_node(scene_root_node)
+
+func _ready():
+	$Controller.scene_root = scene_root
+
+func _physics_process(delta):
+	var velocity = $Controller.velocity_signal.sample()
+	translate(velocity * delta)
+	$Controller.sink_event(delta)
+"
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 1 ) ],
+"loop": true,
+"name": "test",
+"speed": 5.0
+} ]
+
+[sub_resource type="CircleShape2D" id=2]
+
+[node name="Player" type="Node2D"]
+script = SubResource( 3 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+animation = "test"
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource( 2 )
+
+[node name="Controller" type="Node" parent="."]
+script = ExtResource( 2 )
+player_node = NodePath("..")
+
+[node name="MovementInput" type="Node" parent="Controller"]
+script = ExtResource( 4 )
+
+[node name="FireInput" type="Node" parent="Controller"]
+script = ExtResource( 5 )
+
+[node name="SlowInput" type="Node" parent="Controller"]
+script = ExtResource( 3 )

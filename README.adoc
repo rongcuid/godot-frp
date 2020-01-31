@@ -1,0 +1,28 @@
+= Godot Functional Reactive Programming
+
+The FRP structure follows roughly the book _Functional Reactive Programming, Stephen Blackheath_.
+
+Proof of concept to show: 
+
+. It can be done
+. Minimal example for how to do it
+
+To run, use Godot 3.2 and run main scene.
+WASD/Arrow keys to move, Z to shoot.
+
+There are some more test scenes under `test/` folder.
+
+= Summary
+
+It can be done.
+However, since Godot uses the Observer pattern, the FRP approach is not well integrated.
+Observer code and FRP code are heavily mixed to update members of official node types.
+
+FRP in Godot 3.2 is possible, but has major ergonomics issues unless:
+
+. First class function is supported
+. We rewrite the whole godot Scene hierarchy to use FRP
+
+The first issue makes debugging very hard if one messes up with function reference calls.
+The second is that we are essentially storing the same info at two places: one in FRP structure and one in Godot structure.
+In addition, currently we must use a separate Node to store FRP structures as there is no multiple inheritance.
